@@ -51,6 +51,11 @@
 
 #include "netif/etharp.h"
 
+/** bridge code by iwan - start */
+#include "bridge_eth_ser.h"
+sys_sem_t 	sem_bridge;
+
+/** bridge code by iwan - end */
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
 #include "netif/tcpdump.h"
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
@@ -157,6 +162,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   char *bufptr;
   struct tapif *tapif;
 
+  sys_sem_wait(sem_bridge);
   tapif = netif->state;
 #if 0  
     if(((double)rand()/(double)RAND_MAX) < 0.2) {
@@ -180,7 +186,19 @@ low_level_output(struct netif *netif, struct pbuf *p)
   /* signal that packet should be sent(); */
   if(write(tapif->fd, buf, p->tot_len) == -1) {
     perror("tapif: write");
+	printf("tot len = %d\n", p->tot_len);
+	if (tapif == NULL)
+		printf("tapif nya NULL\n");
+	if (tapif->fd == NULL)
+		printf("tapif fd null\n");
+	else
+		printf("tapif fd = %d\n", tapif->fd);
+	if(buf == NULL)
+		printf("buf nya null\n");
+	else
+		printf("buf tidak NULL\n");
   }
+  sys_sem_signal(sem_bridge);
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -281,6 +299,7 @@ tapif_input(struct netif *netif)
   tapif = netif->state;
   
   p = low_level_input(tapif);
+  bridge_e2s_queue(p);
 
   if(p == NULL) {
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
@@ -332,6 +351,8 @@ err_t
 tapif_init(struct netif *netif)
 {
   struct tapif *tapif;
+
+  sem_bridge = sys_sem_new(1);
     
   tapif = mem_malloc(sizeof(struct tapif));
   if (!tapif)
@@ -344,6 +365,7 @@ tapif_init(struct netif *netif)
   netif->mtu = 1500; 	 
   /* hardware address length */
   netif->hwaddr_len = 6;
+  //netif->flags |= NETIF_FLAG_ETHARP;//iwanbk
   
   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
   low_level_init(netif);
