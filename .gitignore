@@ -1,3 +1,6 @@
 *.o
 *.a
 *.so
+contrib/ports/unix/include/netif/bridge_eth_ser.h
+contrib/ports/unix/netif/bridge_eth_ser.c
+
