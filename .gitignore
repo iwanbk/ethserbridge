@@ -3,4 +3,7 @@
 *.so
 contrib/ports/unix/include/netif/bridge_eth_ser.h
 contrib/ports/unix/netif/bridge_eth_ser.c
-
+tags
+cscope.in.out
+cscope.out
+cscope.po.out
