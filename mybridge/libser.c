@@ -79,3 +79,31 @@ ssize_t ser_safe_write(int fd, const void *buf, size_t size)
 	}
 	return size - left;
 }
+
+
+ssize_t serbridge_safe_write(int fd, const void *buf, size_t size)
+{
+	//tulis sparator
+	uint8_t spa[2];
+	spa[0] = ((uint16_t)size) >> 8;
+	spa[1] = ((uint16_t) size) & 255;
+
+	if (ser_safe_write(fd, spa, 2) != 2)
+		return -1;
+	//tulis data
+	return ser_safe_write(fd, buf, size);
+}
+
+ssize_t serbridge_safe_read(int fd, void *buf, uint16_t *pack_len)
+{
+	*pack_len = 0;
+	//read sparator
+	uint8_t spa[2];
+	if (ser_safe_read(fd, spa, 2) != 2) {
+		return -1;
+	}
+	*pack_len = spa[0] << 8;
+	*pack_len = *pack_len | spa[1];
+
+	return ser_safe_read(fd, buf, *pack_len);
+}

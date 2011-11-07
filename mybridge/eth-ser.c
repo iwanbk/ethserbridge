@@ -49,6 +49,7 @@ static void ser_to_eth_thread(void *arg)
 	uint8_t buf[SER_BUF_LEN];
 	int nread;
 	struct pbuf *pbuf;
+	int pack_len;
 
 	maxfd = sd.fd + 1;
 	while (1) {
@@ -62,7 +63,8 @@ static void ser_to_eth_thread(void *arg)
 			sys_sem_wait(sem_ser);
 			
 			/* read */
-			nread = ser_safe_read(sd.fd, buf, SER_BUF_LEN);
+			//nread = ser_safe_read(sd.fd, buf, SER_BUF_LEN);
+			nread = serbridge_safe_read(sd.fd, buf, &pack_len);
 
 			/* release/signal the semaphore */
 			sys_sem_signal(sem_ser);
@@ -97,7 +99,7 @@ static void eth_to_ser_thread(void *arg)
 			sys_sem_wait(sem_ser);
 
 			/* send to serial device */
-			ser_safe_write(sd.fd, bd->payload, bd->len);
+			serbridge_safe_write(sd.fd, bd->payload, bd->len);
 
 			/* release the semaphore */
 			sys_sem_signal(sem_ser);
