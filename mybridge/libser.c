@@ -99,8 +99,9 @@ ssize_t serbridge_safe_read(int fd, void *buf, uint16_t *pack_len)
 	*pack_len = 0;
 	//read sparator
 	uint8_t spa[2];
-	if (ser_safe_read(fd, spa, 2) != 2) {
-		return -1;
+	int nread;
+	if ((nread = ser_safe_read(fd, spa, 2)) != 2) {
+		return nread;
 	}
 	*pack_len = spa[0] << 8;
 	*pack_len = *pack_len | spa[1];
