@@ -186,17 +186,6 @@ low_level_output(struct netif *netif, struct pbuf *p)
   /* signal that packet should be sent(); */
   if(write(tapif->fd, buf, p->tot_len) == -1) {
     perror("tapif: write");
-	printf("tot len = %d\n", p->tot_len);
-	if (tapif == NULL)
-		printf("tapif nya NULL\n");
-	if (tapif->fd == NULL)
-		printf("tapif fd null\n");
-	else
-		printf("tapif fd = %d\n", tapif->fd);
-	if(buf == NULL)
-		printf("buf nya null\n");
-	else
-		printf("buf tidak NULL\n");
   }
   sys_sem_signal(sem_bridge);
   return ERR_OK;
