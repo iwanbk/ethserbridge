@@ -50,14 +50,18 @@ static void ser_to_eth_thread(void *arg)
 	int nread;
 	struct pbuf *pbuf;
 	int pack_len;
+	int select_res;
 
 	maxfd = sd.fd + 1;
 	while (1) {
 		FD_SET(sd.fd, &readfs);
 		
 		/* block */
-		select(maxfd, &readfs, NULL, NULL, NULL);
-		
+		select_res = select(maxfd, &readfs, NULL, NULL, NULL);
+
+		if (select_res == 0 || select_res == -1) {
+			continue;
+		}
 		if (FD_ISSET(sd.fd, &readfs)) {
 			/* get the semaphore */
 			sys_sem_wait(sem_ser);
