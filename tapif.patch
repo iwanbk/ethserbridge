@@ -1,0 +1,55 @@
+--- /tmp/contrib/ports/unix/netif/tapif.c	2007-12-20 03:26:53.000000000 +0700
++++ contrib/ports/unix/netif/tapif.c	2011-11-10 01:01:28.000000000 +0700
+@@ -51,6 +51,11 @@
+ 
+ #include "netif/etharp.h"
+ 
++/** bridge code by iwan - start */
++#include "bridge_eth_ser.h"
++sys_sem_t 	sem_bridge;
++
++/** bridge code by iwan - end */
+ #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
+ #include "netif/tcpdump.h"
+ #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
+@@ -157,6 +162,7 @@
+   char *bufptr;
+   struct tapif *tapif;
+ 
++  sys_sem_wait(sem_bridge);
+   tapif = netif->state;
+ #if 0  
+     if(((double)rand()/(double)RAND_MAX) < 0.2) {
+@@ -181,6 +187,7 @@
+   if(write(tapif->fd, buf, p->tot_len) == -1) {
+     perror("tapif: write");
+   }
++  sys_sem_signal(sem_bridge);
+   return ERR_OK;
+ }
+ /*-----------------------------------------------------------------------------------*/
+@@ -281,6 +288,7 @@
+   tapif = netif->state;
+   
+   p = low_level_input(tapif);
++  bridge_e2s_queue(p);
+ 
+   if(p == NULL) {
+     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
+@@ -332,6 +340,8 @@
+ tapif_init(struct netif *netif)
+ {
+   struct tapif *tapif;
++
++  sem_bridge = sys_sem_new(1);
+     
+   tapif = mem_malloc(sizeof(struct tapif));
+   if (!tapif)
+@@ -344,6 +354,7 @@
+   netif->mtu = 1500; 	 
+   /* hardware address length */
+   netif->hwaddr_len = 6;
++  //netif->flags |= NETIF_FLAG_ETHARP;//iwanbk
+   
+   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
+   low_level_init(netif);
