@@ -1,3 +1,5 @@
 LWIP Eth-Serial Bridge
 
-Forward all eth packet to serial and vice versa
+Forward all eth packet to serial and vice versa.
+
+It build for ecos & lwip, but can be adapted to another OS.
